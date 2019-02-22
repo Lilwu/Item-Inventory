@@ -82,6 +82,14 @@ public class InventoryManager : MonoBehaviour
             itemTooltip.transform.position = Input.mousePosition;
             itemTooltip.ShowTooltip(equippableItem);
         }
+
+        //新增補助道具顯示功能 20190222
+        RestorableItem restorableItem = itemSlot.Item as RestorableItem;
+        if (restorableItem != null)
+        {
+            itemTooltip.transform.position = Input.mousePosition;
+            itemTooltip.ShowTooltip(restorableItem);
+        }
     }
 
     private void HideTooltip(ItemSlot itemSlot)
@@ -120,14 +128,21 @@ public class InventoryManager : MonoBehaviour
 
             if(draggedSlot is EquipmentSlot)
             {
-                if (dragItem != null) dragItem.Unequip(this);
-                if (dropItem != null) dropItem.Equip(this);
+                if (dragItem != null)
+                 dragItem.Unequip(this);
+                if (dropItem != null)
+                 dropItem.Equip(this);
+
+                //TODO 移動inventory物品到equipment上數量沒有減少 20190222
+                inventory.AddItem(dropItem);
             }
 
             if(dropItemSlot is EquipmentSlot)
             {
-                if (dragItem != null) dragItem.Equip(this);
-                if (dropItem != null) dropItem.Unequip(this);
+                if (dragItem != null) 
+                dragItem.Equip(this);
+                if (dropItem != null) 
+                dropItem.Unequip(this);
             }
 
             Item draggedItem = draggedSlot.Item;
@@ -135,11 +150,6 @@ public class InventoryManager : MonoBehaviour
             dropItemSlot.Item = draggedItem;
         }
     }
-
-
-
-
-
 
     private void EquipFormInventory(Item item)
     {

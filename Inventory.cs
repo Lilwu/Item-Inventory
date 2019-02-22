@@ -12,6 +12,8 @@ public class Inventory : MonoBehaviour
     [SerializeField] Transform itemParent;
     [SerializeField] ItemSlot[] itemSlots;
 
+    //撿取物品 20190222
+
     public event Action<ItemSlot> OnRightClickEvent;
 
     //滑鼠游標移動物品 20190221
@@ -116,6 +118,8 @@ public class Inventory : MonoBehaviour
             if(itemSlots[i].Item == null)
             {
                 itemSlots[i].Item = item;
+                //20190222
+                startingItem.Add(item);
                 return true;
             }
         }
@@ -129,6 +133,8 @@ public class Inventory : MonoBehaviour
             if (itemSlots[i].Item == item)
             {
                 itemSlots[i].Item = null;
+                //20190222
+                startingItem.Remove(item);
                 return true;
             }
         }

@@ -28,4 +28,20 @@ public class EquippableItem : Item
     public int weight; //重量
 
     public EquipmentType equipmentType;
+
+
+    //20190221
+    public void Equip(InventoryManager inventoryManager)
+    {
+
+    }
+
+    public void Unequip(InventoryManager inventoryManager)
+    {
+
+    }
+
+
 }
+
+

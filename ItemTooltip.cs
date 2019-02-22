@@ -51,6 +51,7 @@ public class ItemTooltip : MonoBehaviour
     public void HideTooltip()
     {
         gameObject.SetActive(false);
+        transform.position = Input.mousePosition;
     }
 
     private void AddStat(float value , string statName)

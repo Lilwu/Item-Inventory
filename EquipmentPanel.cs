@@ -8,13 +8,36 @@ public class EquipmentPanel : MonoBehaviour
     [SerializeField] Transform equipmentSlotParent;
     [SerializeField] EquipmentSlot[] equipmentSlots;
 
-    public event Action<Item> OnItemRightClickedEvent;
+    public event Action<ItemSlot> OnRightClickEvent;
 
-    private void Awake()
+    //滑鼠游標移動物品 20190221
+    public event Action<ItemSlot> OnPointerEnterEvent;
+    public event Action<ItemSlot> OnPointerExitEvent;
+    public event Action<ItemSlot> OnBeginDragEvent;
+    public event Action<ItemSlot> OnEndDragEvent;
+    public event Action<ItemSlot> OnDragEvent;
+    public event Action<ItemSlot> OnDropEvent;
+
+    //private void Awake()
+    //{
+    //    for (int i = 0; i < equipmentSlots.Length; i++)
+    //    {
+    //        equipmentSlots[i].OnRightClickEvent += OnRightClickEvent;
+    //    }
+    //}
+
+    //滑鼠游標移動物品 20190221
+    private void Start()
     {
         for (int i = 0; i < equipmentSlots.Length; i++)
         {
-            equipmentSlots[i].OnRightClickEvent += OnItemRightClickedEvent;
+            equipmentSlots[i].OnPointerEnterEvent += OnPointerEnterEvent;
+            equipmentSlots[i].OnPointerExitEvent += OnPointerExitEvent;
+            equipmentSlots[i].OnRightClickEvent += OnRightClickEvent;
+            equipmentSlots[i].OnBeginDragEvent += OnBeginDragEvent;
+            equipmentSlots[i].OnEndDragEvent += OnEndDragEvent;
+            equipmentSlots[i].OnDragEvent += OnDragEvent;
+            equipmentSlots[i].OnDropEvent += OnDropEvent;
         }
     }
 

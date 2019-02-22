@@ -1,22 +1,25 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 [CreateAssetMenu]
 public class Item : ScriptableObject
 {
+    [SerializeField] string id;
+    public string ID { get { return id; } }
     public string ItemName;
     public Sprite Icon;
-}
 
-public class ItemEventArgs: EventArgs
-{
-    public ItemEventArgs(Item item)
+
+    //20190222 
+    private void OnValidate()
     {
-        Item = item;
+        string path = AssetDatabase.GetAssetPath(this);
+        id = AssetDatabase.AssetPathToGUID(path);
     }
 
-    public Item Item;
+
 }
 

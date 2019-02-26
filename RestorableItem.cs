@@ -19,4 +19,14 @@ public class RestorableItem : Item
     public bool BackToTown;   //傳送回村莊
 
     public RestoreItemType restoreItemType;
+
+
+    //20190225
+    public bool IsConsumable;
+
+    public virtual void Use(InventoryManager inventoryManager)
+    {
+        inventoryManager.Health += 50;
+        Debug.Log("增加玩家50滴血量");
+    }
 }

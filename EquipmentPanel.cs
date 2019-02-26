@@ -7,6 +7,7 @@ public class EquipmentPanel : MonoBehaviour
 {
     [SerializeField] Transform equipmentSlotParent;
     [SerializeField] EquipmentSlot[] equipmentSlots;
+    [SerializeField] Inventory inventory;
 
     public event Action<ItemSlot> OnRightClickEvent;
 
@@ -44,6 +45,7 @@ public class EquipmentPanel : MonoBehaviour
     private void OnValidate()
     {
         equipmentSlots = equipmentSlotParent.GetComponentsInChildren<EquipmentSlot>();
+        inventory = FindObjectOfType<Inventory>();
     }
 
     public bool AddItem(EquippableItem item, out EquippableItem previousItem)
@@ -68,6 +70,7 @@ public class EquipmentPanel : MonoBehaviour
             if (equipmentSlots[i].Item == item)
             {
                 equipmentSlots[i].Item = null;
+
                 return true;
             }
         }

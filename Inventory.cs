@@ -7,10 +7,10 @@ using UnityEngine.Serialization;
 
 public class Inventory : MonoBehaviour
 {
-    [FormerlySerializedAs("items")]
-    [SerializeField] List<Item> startingItem;
-    [SerializeField] Transform itemParent;
-    [SerializeField] ItemSlot[] itemSlots;
+    //[FormerlySerializedAs("items")]
+    //[SerializeField] List<Item> startingItem;
+    //[SerializeField] Transform itemParent;
+    public List<ItemSlot> itemSlots;
 
     //撿取物品 20190222
 
@@ -24,19 +24,11 @@ public class Inventory : MonoBehaviour
     public event Action<ItemSlot> OnDragEvent;
     public event Action<ItemSlot> OnDropEvent;
 
+
+    //滑鼠游標移動物品 20190221
     private void Awake()
     {
-        //for (int i = 0; i < itemSlots.Length; i++)
-        //{
-        //    itemSlots[i].OnRightClickEvent += OnItemRightClickedEvent;
-        //}
-
-        //SetStartingItem();
-    }
-    //滑鼠游標移動物品 20190221
-    private void Start()
-    {
-        for (int i = 0; i < itemSlots.Length; i++)
+        for (int i = 0; i < itemSlots.Count; i++)
         {
             itemSlots[i].OnPointerEnterEvent += OnPointerEnterEvent;
             itemSlots[i].OnPointerExitEvent += OnPointerExitEvent;
@@ -46,38 +38,40 @@ public class Inventory : MonoBehaviour
             itemSlots[i].OnDragEvent += OnDragEvent;
             itemSlots[i].OnDropEvent += OnDropEvent;
         }
-        SetStartingItem();
     }
 
     private void OnValidate()
     {
-        if (itemParent != null)
-            itemSlots = itemParent.GetComponentsInChildren<ItemSlot>();
-
-        SetStartingItem();
+            GetComponentsInChildren(includeInactive: true, result: itemSlots);
+           
     }
 
-    private void SetStartingItem()
-    {
-        int i = 0;
-        for (; i < startingItem.Count && i < itemSlots.Length; i++)
-        {
-            itemSlots[i].Item = startingItem[i];
-        }
-
-        for (; i < itemSlots.Length; i++)
-        {
-            itemSlots[i].Item = null;
-        }
-    }
-
-    //private void RefreshUI()
+    //public void SetStartingItem()
     //{
     //    int i = 0;
-    //    for (; i < items.Count && i < itemSlots.Length; i++)
+    //    for (; i < startingItem.Count && i < itemSlots.Count; i++)
     //    {
-    //        itemSlots[i].Item = items[i];
+    //        //itemSlots[i].Item = startingItem[i];
+    //        itemSlots[i].Item = Instantiate(startingItem[i].GetCopy());
+    //        //20190224
+    //        itemSlots[i].Amount = 1;
     //    }
+
+    //    for (; i < itemSlots.Count; i++)
+    //    {
+    //        itemSlots[i].Item = null;
+    //        itemSlots[i].Amount = 0;
+    //    }
+    //}
+
+    //public void RefreshUI()
+    //{
+        //int i = 0;
+        //for (; i < startingItem.Count && i < itemSlots.Count; i++)
+        //{
+        //    itemSlots[i].Item = startingItem[i];
+        //}
+        //}
 
     //    for (; i < itemSlots.Length; i++)
     //    {
@@ -113,13 +107,15 @@ public class Inventory : MonoBehaviour
 
     public bool AddItem(Item item)
     {
-        for (int i = 0; i < itemSlots.Length; i++)
+        for (int i = 0; i < itemSlots.Count; i++)
         {
-            if(itemSlots[i].Item == null)
+            if(itemSlots[i].Item == null || itemSlots[i].CanAddStack(item))
             {
                 itemSlots[i].Item = item;
                 //20190222
-                startingItem.Add(item);
+                //startingItem.Add(item);
+                //20190224
+                itemSlots[i].Amount++;
                 return true;
             }
         }
@@ -128,28 +124,57 @@ public class Inventory : MonoBehaviour
 
     public bool RemoveItem(Item item)
     {
-        for (int i = 0; i < itemSlots.Length; i++)
+        for (int i = 0; i < itemSlots.Count; i++)
         {
             if (itemSlots[i].Item == item)
             {
-                itemSlots[i].Item = null;
-                //20190222
-                startingItem.Remove(item);
+                //20190224
+                itemSlots[i].Amount--;
+                //startingItem.Remove(item);
                 return true;
             }
         }
         return false;
     }
-
-    public bool IsFull()
+    //20190224 新增物品ID功能 
+    public Item RemoveItem(string itemID)
     {
-        for (int i = 0; i < itemSlots.Length; i++)
+        for (int i = 0; i < itemSlots.Count; i++)
         {
-            if (itemSlots[i].Item == null)
+            Item item = itemSlots[i].Item;
+            if(item != null && item.ID == itemID)
             {
-                return false;
+                itemSlots[i].Amount--;
+                return item;
             }
         }
-        return true;
+        return null;
+    }
+
+    //public bool IsFull()
+    //{
+    //    for (int i = 0; i < itemSlots.Count; i++)
+    //    {
+    //        if (itemSlots[i].Item == null)
+    //        {
+    //            return false;
+    //        }
+    //    }
+    //    return true;
+    //}
+
+    //20190224 新增物品ID功能
+    public int ItemCount(string itemID)
+    {
+        int number = 0;
+
+        for (int i = 0; i < itemSlots.Count; i++)
+        {
+            if(itemSlots[i].Item.ID == itemID)
+            {
+                number++;
+            }
+        }
+        return number;
     }
 }

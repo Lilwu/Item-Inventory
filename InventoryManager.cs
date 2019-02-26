@@ -1,10 +1,13 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class InventoryManager : MonoBehaviour
 {
+    public int Health = 50;
+
     [SerializeField] Inventory inventory;
     [SerializeField] EquipmentPanel equipmentPanel;
 
@@ -33,8 +36,8 @@ public class InventoryManager : MonoBehaviour
 
         //Setup Events:
         //Right Click
-        inventory.OnRightClickEvent += Equip;
-        equipmentPanel.OnRightClickEvent += Unequip;
+        inventory.OnRightClickEvent += InventoryRightClick;
+        equipmentPanel.OnRightClickEvent += EquipmentPanelRightClick;
         //Pointer Enter
         inventory.OnPointerEnterEvent += ShowTooltip;
         equipmentPanel.OnPointerEnterEvent += ShowTooltip;
@@ -53,6 +56,42 @@ public class InventoryManager : MonoBehaviour
         //Drop
         inventory.OnDropEvent += Drop;
         equipmentPanel.OnDropEvent += Drop;
+    }
+
+    private void EquipmentPanelRightClick(ItemSlot itemSlot)
+    {
+        if (itemSlot.Item is EquippableItem)
+        {
+            Unequip((EquippableItem)itemSlot.Item);
+        }
+
+    }
+
+    private void InventoryRightClick(ItemSlot itemSlot)
+    {
+        if (itemSlot.Item is EquippableItem)
+        {
+            Equip((EquippableItem)itemSlot.Item);
+        }
+
+        if (itemSlot.Item is EquippableItem)
+        {
+            Equip((EquippableItem)itemSlot.Item);
+        }
+        else if (itemSlot.Item is RestorableItem)
+        {
+            RestorableItem restorable = (RestorableItem)itemSlot.Item;
+            restorable.Use(this);
+
+            inventory.RemoveItem(restorable);
+            restorable.Destroy();
+
+            if (restorable.IsConsumable)
+            {
+                inventory.RemoveItem(restorable);
+                restorable.Destroy();
+            }
+        }
     }
 
     //滑鼠游標移動物品 20190221
@@ -121,34 +160,51 @@ public class InventoryManager : MonoBehaviour
 
     private void Drop(ItemSlot dropItemSlot)
     {
-        if(dropItemSlot.CanReceiveItem(draggedSlot.Item) && draggedSlot.CanReceiveItem(draggedSlot.Item))
+        if (draggedSlot == null) return;
+
+        if (dropItemSlot.CanAddStack(draggedSlot.Item))
         {
-            EquippableItem dragItem = draggedSlot.Item as EquippableItem;
-            EquippableItem dropItem = dropItemSlot.Item as EquippableItem;
-
-            if(draggedSlot is EquipmentSlot)
-            {
-                if (dragItem != null)
-                 dragItem.Unequip(this);
-                if (dropItem != null)
-                 dropItem.Equip(this);
-
-                //TODO 移動inventory物品到equipment上數量沒有減少 20190222
-                inventory.AddItem(dropItem);
-            }
-
-            if(dropItemSlot is EquipmentSlot)
-            {
-                if (dragItem != null) 
-                dragItem.Equip(this);
-                if (dropItem != null) 
-                dropItem.Unequip(this);
-            }
-
-            Item draggedItem = draggedSlot.Item;
-            draggedSlot.Item = dropItemSlot.Item;
-            dropItemSlot.Item = draggedItem;
+            AddStacks(dropItemSlot);
         }
+        else if (dropItemSlot.CanReceiveItem(draggedSlot.Item) && draggedSlot.CanReceiveItem(dropItemSlot.Item))
+        {
+            SwapItems(dropItemSlot);
+        }
+    }
+    //20190225
+    private void AddStacks(ItemSlot dropItemSlot)
+    {
+        int numAddableStacks = dropItemSlot.Item.MaximumStacks - dropItemSlot.Amount;
+        int stacksToAdd = Mathf.Min(numAddableStacks, draggedSlot.Amount);
+
+        dropItemSlot.Amount += stacksToAdd;
+        draggedSlot.Amount -= stacksToAdd;
+    }
+
+    private void SwapItems(ItemSlot dropItemSlot)
+    {
+        EquippableItem dragEquipItem = draggedSlot.Item as EquippableItem;
+        EquippableItem dropEquipItem = dropItemSlot.Item as EquippableItem;
+
+        if (dropItemSlot is EquipmentSlot)
+        {
+            if (dragEquipItem != null) dragEquipItem.Equip(this);
+            if (dropEquipItem != null) dropEquipItem.Unequip(this);
+        }
+        if (draggedSlot is EquipmentSlot)
+        {
+            if (dragEquipItem != null) dragEquipItem.Unequip(this);
+            if (dropEquipItem != null) dropEquipItem.Equip(this);
+        }
+
+        Item draggedItem = draggedSlot.Item;
+        int draggedItemAmount = draggedSlot.Amount;
+
+        draggedSlot.Item = dropItemSlot.Item;
+        draggedSlot.Amount = dropItemSlot.Amount;
+
+        dropItemSlot.Item = draggedItem;
+        dropItemSlot.Amount = draggedItemAmount;
     }
 
     private void EquipFormInventory(Item item)
@@ -156,6 +212,17 @@ public class InventoryManager : MonoBehaviour
         if(item is EquippableItem)
         {
             Equip((EquippableItem)item);
+        }
+        else if(item is UsableItem)
+        {
+            UsableItem usableItem = (UsableItem)item;
+            usableItem.Use(this);
+
+            if(usableItem.IsConsumable)
+            {
+                inventory.RemoveItem(usableItem);
+                usableItem.Destroy();
+            }
         }
     }
 
@@ -177,7 +244,9 @@ public class InventoryManager : MonoBehaviour
                 if(previousItem != null)
                 {
                     inventory.AddItem(previousItem);
+                    previousItem.Unequip(this);
                 }
+                item.Equip(this);
             }
         }
         else
@@ -188,8 +257,9 @@ public class InventoryManager : MonoBehaviour
 
     public void Unequip(EquippableItem item)
     {
-        if(!inventory.IsFull() && equipmentPanel.RemoveItem(item))
+        if (equipmentPanel.RemoveItem(item))
         {
+            item.Unequip(this);
             inventory.AddItem(item);
         }
     }

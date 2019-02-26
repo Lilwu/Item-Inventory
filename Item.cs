@@ -12,6 +12,10 @@ public class Item : ScriptableObject
     public string ItemName;
     public Sprite Icon;
 
+    //20190224 
+    [Range(1,999)]
+    public int MaximumStacks = 1;
+
 
     //20190222 
     private void OnValidate()
@@ -20,6 +24,14 @@ public class Item : ScriptableObject
         id = AssetDatabase.AssetPathToGUID(path);
     }
 
+    public virtual Item GetCopy()
+    {
+        return this;
+    }
 
+    public virtual void Destroy()
+    {
+
+    }
 }
 

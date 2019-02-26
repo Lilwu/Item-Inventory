@@ -30,6 +30,18 @@ public class EquippableItem : Item
     public EquipmentType equipmentType;
 
 
+    public override Item GetCopy()
+    {
+        return Instantiate(this);
+    }
+
+    public override void Destroy()
+    {
+        Destroy(this);
+    }
+
+
+
     //20190221
     public void Equip(InventoryManager inventoryManager)
     {

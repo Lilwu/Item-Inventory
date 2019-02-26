@@ -9,6 +9,7 @@ public class ItemSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
 {
     [SerializeField] Image image;
     [SerializeField] ItemTooltip tooltip;
+    [SerializeField] Text amountText;
 
     public event Action<ItemSlot> OnRightClickEvent;
 
@@ -39,12 +40,33 @@ public class ItemSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
             else
             {
                 image.sprite = _item.Icon;
-                image.color = normalColor;  
+                image.color = normalColor;
                 //image.enabled = true;
             }
         }
     }
 
+    //20190224 製作UI物品數量
+    private int _amount;
+    public int Amount
+    {
+        get { return _amount; }
+        set 
+        {
+         _amount = value;
+            if (_amount < 0) _amount = 0;
+            if (_amount == 0) Item = null;
+
+            if(amountText != null)
+            {
+                amountText.enabled = _item != null && _item.MaximumStacks > 1 && _amount > 1;
+                if (amountText.enabled)
+                {
+                    amountText.text = _amount.ToString();
+                }
+            }
+        }
+    }
 
     protected virtual void OnValidate()
     {
@@ -52,6 +74,9 @@ public class ItemSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
             image = GetComponent<Image>();
         if (tooltip == null)
             tooltip = FindObjectOfType<ItemTooltip>();
+        //20190224 
+        if (amountText == null)
+            amountText = GetComponentInChildren<Text>();
     }
 
     //20190221
@@ -60,7 +85,10 @@ public class ItemSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
         return true;
     }
 
-
+    public bool CanAddStack(Item item, int amount = 1)
+    {
+        return Item != null && Item.ID == item.ID && Amount + amount <= item.MaximumStacks;
+    }
 
 
     public void OnPointerClick(PointerEventData eventData)
@@ -138,7 +166,5 @@ public class ItemSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
     {
         if (OnDropEvent != null)
             OnDropEvent(this);
-
-
     }
 }

@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 public class InventoryManager : MonoBehaviour
 {
@@ -10,6 +8,7 @@ public class InventoryManager : MonoBehaviour
 
     [SerializeField] Inventory inventory;
     [SerializeField] EquipmentPanel equipmentPanel;
+    [SerializeField] HotkeyBar hotkeyBar;
 
     //20190221
     [SerializeField] ItemTooltip itemTooltip;
@@ -19,9 +18,6 @@ public class InventoryManager : MonoBehaviour
 
     private void OnValidate()
     {
-        inventory = FindObjectOfType<Inventory>();
-        equipmentPanel = FindObjectOfType<EquipmentPanel>();
-
         if (itemTooltip == null)
             itemTooltip = FindObjectOfType<ItemTooltip>();
     }
@@ -29,6 +25,9 @@ public class InventoryManager : MonoBehaviour
 
     private void Awake()
     {
+        inventory = FindObjectOfType<Inventory>();
+        equipmentPanel = FindObjectOfType<EquipmentPanel>();
+        hotkeyBar = FindObjectOfType<HotkeyBar>();
         //inventory.OnRightClickEvent += EquipFormInventory;
         //equipmentPanel.OnRightClickEvent += UnequipFromEquipPanel;
 
@@ -47,15 +46,20 @@ public class InventoryManager : MonoBehaviour
         //Begin Drag
         inventory.OnBeginDragEvent += BeginDrag;
         equipmentPanel.OnBeginDragEvent += BeginDrag;
+        hotkeyBar.OnBeginDragEvent += BeginDrag;
         //End Drag
         inventory.OnEndDragEvent += EndDrag;
         equipmentPanel.OnEndDragEvent += EndDrag;
+        hotkeyBar.OnEndDragEvent += EndDrag;
         //Drag
         inventory.OnDragEvent += Drag;
         equipmentPanel.OnDragEvent += Drag;
+        hotkeyBar.OnDragEvent += Drag;
         //Drop
         inventory.OnDropEvent += Drop;
         equipmentPanel.OnDropEvent += Drop;
+        //20190227
+        hotkeyBar.OnDropEvent += Drop;
     }
 
     private void EquipmentPanelRightClick(ItemSlot itemSlot)
@@ -151,6 +155,24 @@ public class InventoryManager : MonoBehaviour
     {
         draggedSlot = null;
         draggableItem.enabled = false;
+
+        //20190227 物品移至地面後刪除; TODO 未完成
+        RaycastHit hit = new RaycastHit();
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(ray, out hit, 1000))
+        {
+            if (hit.collider.tag == "Floor" && !EventSystem.current.IsPointerOverGameObject()) 
+            {
+                print(hit.collider.tag);
+                print(itemSlot.Item.name);
+                Object obj = Resources.Load(itemSlot.Item.name);
+
+                GameObject gobj = Instantiate(obj) as GameObject;
+                gobj.transform.position = hit.point;
+
+                itemSlot.Item = null;
+            }
+        }
     }
 
     private void Drag(ItemSlot itemSlot)
@@ -169,6 +191,7 @@ public class InventoryManager : MonoBehaviour
         else if (dropItemSlot.CanReceiveItem(draggedSlot.Item) && draggedSlot.CanReceiveItem(dropItemSlot.Item))
         {
             SwapItems(dropItemSlot);
+            DropToHotkeyBar(dropItemSlot);
         }
     }
     //20190225
@@ -188,15 +211,16 @@ public class InventoryManager : MonoBehaviour
 
         if (dropItemSlot is EquipmentSlot)
         {
+            print("test1");
             if (dragEquipItem != null) dragEquipItem.Equip(this);
             if (dropEquipItem != null) dropEquipItem.Unequip(this);
         }
         if (draggedSlot is EquipmentSlot)
         {
+            print("test2");
             if (dragEquipItem != null) dragEquipItem.Unequip(this);
             if (dropEquipItem != null) dropEquipItem.Equip(this);
         }
-
         Item draggedItem = draggedSlot.Item;
         int draggedItemAmount = draggedSlot.Amount;
 
@@ -261,6 +285,58 @@ public class InventoryManager : MonoBehaviour
         {
             item.Unequip(this);
             inventory.AddItem(item);
+        }
+    }
+
+    //SetHotKey 20190227
+    private void DropToHotkeyBar(ItemSlot dropItemSlot)
+    {
+        RestorableItem dragToHotkeyItem = draggedSlot.Item as RestorableItem;
+        RestorableItem dropToHotkeyItem = dropItemSlot.Item as RestorableItem;
+
+        if (dropItemSlot is HotkeySlot)
+        {
+            if (dragToHotkeyItem != null)
+            {
+                hotkeyBar.SetHotkeyItem(dropItemSlot);
+                //Instantiate(draggedSlot).Item = (RestorableItem)draggedSlot.Item;
+                print("test3");
+            }
+            if (dropToHotkeyItem != null)
+            {
+                dropItemSlot.Item = (RestorableItem)dropItemSlot.Item;
+                print("test4");
+            }
+        }
+        if (draggedSlot is HotkeySlot)
+        {
+            if (dragToHotkeyItem != null) dragToHotkeyItem = (RestorableItem)dropItemSlot.Item;
+            if (dropToHotkeyItem != null) dropToHotkeyItem = (RestorableItem)dropItemSlot.Item;
+        }
+
+    }
+
+    //DropItem 20190303
+    private void DropItem(ItemSlot dropItemSlot)
+    {
+
+    }
+
+    public void UseHotkeyItem(HotkeySlot hotkeySlot)
+    {
+        if (hotkeySlot.Item is RestorableItem)
+        {
+            RestorableItem restorable = (RestorableItem)hotkeySlot.Item;
+            restorable.Use(this);
+
+            hotkeyBar.RemoveItem(restorable);
+            restorable.Destroy();
+
+            if (restorable.IsConsumable)
+            {
+                hotkeyBar.RemoveItem(restorable);
+                restorable.Destroy();
+            }
         }
     }
 }

@@ -29,4 +29,9 @@ public class RestorableItem : Item
         inventoryManager.Health += 50;
         Debug.Log("增加玩家50滴血量");
     }
+
+    public override Item GetCopy()
+    {
+        return Instantiate(this);
+    }
 }

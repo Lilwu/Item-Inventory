@@ -24,6 +24,8 @@ public class ItemSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
     private Color normalColor = Color.white;
     private Color disabledColor = new Color(1, 1, 1, 0);
 
+    private Sprite sprite;
+
 
     private Item _item;
     public Item Item
@@ -35,13 +37,13 @@ public class ItemSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
             if (_item == null)
             {
                 image.color = disabledColor;
+                image.sprite = null;
                 //image.enabled = false;
             }
             else
             {
                 image.sprite = _item.Icon;
                 image.color = normalColor;
-                //image.enabled = true;
             }
         }
     }

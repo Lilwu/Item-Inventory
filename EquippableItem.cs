@@ -41,7 +41,6 @@ public class EquippableItem : Item
     }
 
 
-
     //20190221
     public void Equip(InventoryManager inventoryManager)
     {

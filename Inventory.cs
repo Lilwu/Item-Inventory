@@ -46,65 +46,6 @@ public class Inventory : MonoBehaviour
            
     }
 
-    //public void SetStartingItem()
-    //{
-    //    int i = 0;
-    //    for (; i < startingItem.Count && i < itemSlots.Count; i++)
-    //    {
-    //        //itemSlots[i].Item = startingItem[i];
-    //        itemSlots[i].Item = Instantiate(startingItem[i].GetCopy());
-    //        //20190224
-    //        itemSlots[i].Amount = 1;
-    //    }
-
-    //    for (; i < itemSlots.Count; i++)
-    //    {
-    //        itemSlots[i].Item = null;
-    //        itemSlots[i].Amount = 0;
-    //    }
-    //}
-
-    //public void RefreshUI()
-    //{
-        //int i = 0;
-        //for (; i < startingItem.Count && i < itemSlots.Count; i++)
-        //{
-        //    itemSlots[i].Item = startingItem[i];
-        //}
-        //}
-
-    //    for (; i < itemSlots.Length; i++)
-    //    {
-    //        itemSlots[i].Item = null;
-    //    }
-    //}
-
-
-    //public bool AddItem(Item item)
-    //{
-    //    if (IsFull())
-    //        return false;
-
-    //    items.Add(item);
-    //    RefreshUI();
-    //    return true;
-    //}
-
-    //public bool RemoveItem(Item item)
-    //{
-    //    if(items.Remove(item))
-    //    {
-    //        RefreshUI();
-    //        return true; 
-    //    }
-    //    return false;
-    //}
-
-    //public bool IsFull()
-    //{
-    //    return items.Count >= itemSlots.Length;
-    //}
-
     public bool AddItem(Item item)
     {
         for (int i = 0; i < itemSlots.Count; i++)
